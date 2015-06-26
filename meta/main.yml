@@ -22,6 +22,15 @@ dependencies:
     backporter_prerequisites: [ 'dpatch' ]
     backporter_install: False
 
+  # User must already exist, otherwise the key won't be installed
+  - role: debops.sshkeys
+    sshkeys_list:
+      - name: '{{ checkmk_agent_ssh_user }}'
+        sshkeys: [ '{{ checkmk_agent_user_key }}' ]
+        options: 'command="/usr/bin/sudo {{ checkmk_agent_exec }}"{% if checkmk_agent_allow is defined and checkmk_agent_allow | length > 0 %},from="{{ checkmk_agent_allow | join(",")}}"{% endif %}'
+    when: (checkmk_agent is defined and checkmk_agent) and
+          ('ssh' in checkmk_agent)
+
   - role: debops.etc_services
     etc_services_dependent_list:
       - name: 'check-mk-agent'
